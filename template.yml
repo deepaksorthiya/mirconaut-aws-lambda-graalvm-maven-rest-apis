@@ -1,0 +1,65 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: AWS Serverless Micronaut With GraalVM
+Globals:
+  Api:
+    EndpointConfiguration: REGIONAL
+
+Resources:
+  AwsLambdaRestApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: dev
+      EndpointConfiguration: REGIONAL
+      Name: AwsLambdaRestApi
+      DefinitionBody:
+        swagger: "2.0"
+        info:
+          title: "AwsLambdaRestApi"
+          version: "1.0"
+        paths:
+          /{proxy+}:
+            x-amazon-apigateway-any-method:
+              x-amazon-apigateway-integration:
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AwsLambdaSpringFunction.Arn}/invocations
+                httpMethod: ANY
+                type: aws_proxy
+          /:
+            x-amazon-apigateway-any-method:
+              x-amazon-apigateway-integration:
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AwsLambdaSpringFunction.Arn}/invocations
+                httpMethod: ANY
+                type: aws_proxy
+  AwsLambdaSpringFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: io.micronaut.function.aws.runtime.MicronautLambdaRuntime
+      Runtime: provided.al2023
+      CodeUri: target/function.zip
+      #Runtime: java21
+      #CodeUri: target/mirconaut-aws-lambda-graalvm-maven-rest-apis-0.1.jar
+      MemorySize: 1024
+      Policies: AWSLambdaBasicExecutionRole
+      Timeout: 30
+      Events:
+        ProxyApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref AwsLambdaRestApi
+            Path: /{proxy+}
+            Method: ANY
+        RootApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref AwsLambdaRestApi
+            Path: /
+            Method: ANY
+
+Outputs:
+  ApiUrl:
+    Description: "Invoke URL for API Gateway endpoint"
+    Value: !Sub "http://${AwsLambdaRestApi}.execute-api.${AWS::Region}.localhost.localstack.cloud/dev/"
+    Export:
+      Name: AwsLambdaRestApiUrl
