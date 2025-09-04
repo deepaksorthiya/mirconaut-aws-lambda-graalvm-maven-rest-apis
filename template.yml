@@ -22,17 +22,17 @@ Resources:
             x-amazon-apigateway-any-method:
               x-amazon-apigateway-integration:
                 uri:
-                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AwsLambdaSpringFunction.Arn}/invocations
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AwsLambdaFunction.Arn}/invocations
                 httpMethod: ANY
                 type: aws_proxy
           /:
             x-amazon-apigateway-any-method:
               x-amazon-apigateway-integration:
                 uri:
-                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AwsLambdaSpringFunction.Arn}/invocations
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AwsLambdaFunction.Arn}/invocations
                 httpMethod: ANY
                 type: aws_proxy
-  AwsLambdaSpringFunction:
+  AwsLambdaFunction:
     Type: AWS::Serverless::Function
     Properties:
       Handler: io.micronaut.function.aws.runtime.MicronautLambdaRuntime
